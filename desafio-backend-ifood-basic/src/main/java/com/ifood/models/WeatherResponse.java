@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.SneakyThrows;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class WeatherResponse {
+public class WeatherResponse implements Serializable {
 
     private String name;
     private List<Weather> weather;
@@ -15,15 +16,15 @@ public class WeatherResponse {
     private Wind wind;
 
     @SneakyThrows
-    @Override
-    public String toString() {
+    public String toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
     }
+
 }
 
 @Data
-class Main {
+class Main implements Serializable {
     private float temp;
     private float feels_like;
     private float temp_min;
@@ -33,14 +34,14 @@ class Main {
 }
 
 @Data
-class Weather {
+class Weather implements Serializable {
     private String main;
     private String description;
     private String icon;
 }
 
 @Data
-class Wind {
+class Wind implements Serializable {
     private float speed;
     private int deg;
 }

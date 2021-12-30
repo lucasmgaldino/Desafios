@@ -1,6 +1,7 @@
 package com.ifood.controllers;
 
-import com.ifood.models.Response;
+import com.ifood.models.IfoodResponse;
+import com.ifood.models.WeatherResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +22,9 @@ public class Weather {
         if (!validateCity(city)) {
             return ResponseEntity.badRequest().body("Cidade Inválida");
         }
-        Response response = this.weatherService.getWeather(city);
-        System.out.println(response);
-        return ResponseEntity.ok(response);
+        WeatherResponse weatherResponse = this.weatherService.getWeather(city);
+        //System.out.println(weatherResponse.toJson());
+        return ResponseEntity.ok(new IfoodResponse(weatherResponse));
     }
 
     private boolean validateCity(final String input) {
