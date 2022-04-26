@@ -47,7 +47,7 @@ public class FileProcessor {
 		log.info("The '{}' file was processed successfully.", originalFileName);
 		return products;
 	}
-	
+
 	private Set<Tag> processTags(Set<String> tagNames) {
 		Set<Tag> tags = new HashSet<>();
 		for (String name : tagNames) {

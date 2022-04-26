@@ -24,10 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 public class AmaroController {
-	
+
 	private final FileProcessor fileProcessor;
 	private final ProductRepository productRepository;
-	
+
 	public AmaroController(FileProcessor fileProcessor, ProductRepository productRepository) {
 		this.fileProcessor = fileProcessor;
 		this.productRepository = productRepository;
@@ -37,14 +37,14 @@ public class AmaroController {
 	public String index() {
 		return "API da Amaro Funcionando!";
 	}
-	
+
 	@PostMapping(value = "/upload")
 	public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
 		Set<Product> products = this.fileProcessor.process(file);
 		products.forEach(p -> log.info("\t{}", p));
 		return ResponseEntity.ok("The '" + file.getOriginalFilename() + "' file was processed successfully.");
 	}
-	
+
 	@GetMapping(value = "/product/{id}")
 	public ResponseEntity<DTOProduct> getProductById(@PathVariable(name = "id") Optional<Integer> optionalId) {
 		if (Objects.isNull(optionalId) || optionalId.isEmpty()) {
@@ -56,7 +56,7 @@ public class AmaroController {
 		}
 		return ResponseEntity.notFound().build();
 	}
-	
+
 	@GetMapping(value = "/products")
 	public List<DTOProduct> getProductsByNameAndTag(@RequestParam(name = "name", required = false) String name,
 			@RequestParam(name = "tag", required = false) String tag) {

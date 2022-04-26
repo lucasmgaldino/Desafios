@@ -10,12 +10,13 @@ import com.amaro.entities.Tag;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Integer> {
-	
+
 	@Cacheable(cacheNames = "tag", key = "#name", unless = "#result == null")
 	Optional<Tag> findByNameIgnoreCase(String name);
-	
+
+	@Cacheable(cacheNames = "tag", key = "#tag.name", unless = "#result == null")
 	default Tag saveIfNotExist(Tag tag) {
 		return this.findByNameIgnoreCase(tag.getName()).orElseGet(() -> this.save(tag));
 	}
-	
+
 }
