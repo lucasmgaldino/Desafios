@@ -5,12 +5,14 @@ import java.util.Optional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.amaro.entities.Tag;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Integer> {
 
+	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "tag", key = "#name", unless = "#result == null")
 	Optional<Tag> findByNameIgnoreCase(String name);
 
