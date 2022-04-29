@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,16 +34,20 @@ public class AmaroController {
 		this.productRepository = productRepository;
 	}
 
-	@GetMapping(value = "/")
+	@GetMapping(value = "/index")
 	public String index() {
-		return "API da Amaro Funcionando!";
+		return "index";
 	}
 
 	@PostMapping(value = "/upload")
 	public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
-		Set<Product> products = this.fileProcessor.process(file);
-		products.forEach(p -> log.info("\t{}", p));
-		return ResponseEntity.ok("The '" + file.getOriginalFilename() + "' file was processed successfully.");
+		try {
+			Set<Product> products = this.fileProcessor.process(file);
+			products.forEach(p -> log.info("{}", p));
+			return ResponseEntity.ok("The '" + file.getOriginalFilename() + "' file was processed successfully.");
+		} catch (InvalidMediaTypeException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 	}
 
 	@GetMapping(value = "/product/{id}")

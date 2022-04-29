@@ -1,19 +1,14 @@
 package com.amaro.services;
 
-import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
-import javax.transaction.Transactional;
-
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amaro.dto.DataFile;
 import com.amaro.entities.Product;
-import com.amaro.entities.Tag;
-import com.amaro.persistence.ProductRepository;
-import com.amaro.persistence.TagRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,39 +17,25 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class FileProcessor {
 
-	private final ObjectMapper objectMapper;
-	private final ProductRepository productRepository;
-	private final TagRepository tagRepository;
+	private Set<Processor> processors;
 
-	public FileProcessor(ObjectMapper objectMapper, ProductRepository productRepository, TagRepository tagRepository) {
-		this.objectMapper = objectMapper;
-		this.productRepository = productRepository;
-		this.tagRepository = tagRepository;
+	public FileProcessor(Set<Processor> processors) {
+		this.processors = processors;
 	}
 
-	@Transactional
 	@SneakyThrows
 	public Set<Product> process(MultipartFile file) {
+		Assert.notNull(file, "A MultipartFile is required.");
 		final String originalFileName = file.getOriginalFilename();
-		log.info("Processing the file {}.", originalFileName);
-		DataFile dataFile = this.objectMapper.readValue(file.getInputStream(), DataFile.class);
-		Set<Product> products = new HashSet<>();
-		dataFile.getProducts().forEach(p -> {
-			Set<Tag> tags = processTags(p.getTags());
-			Product persistedProduct = this.productRepository.save(new Product(p.getId(), p.getName(), tags));
-			products.add(persistedProduct);
-		});
-		log.info("The '{}' file was processed successfully.", originalFileName);
-		return products;
-	}
-
-	private Set<Tag> processTags(Set<String> tagNames) {
-		Set<Tag> tags = new HashSet<>();
-		for (String name : tagNames) {
-			Tag tag = this.tagRepository.saveIfNotExist(new Tag(name));
-			tags.add(tag);
+		log.info("Processing the '{}' file.", originalFileName);
+		Optional<Processor> optionalProcessor = this.processors.stream()
+				.filter(p -> p.accept(file.getContentType())).findFirst();
+		if (optionalProcessor.isPresent()) {
+			return optionalProcessor.get().process(file.getInputStream());
+		} else {
+			log.error("Error processing the {} file. Only application/xml and application/json are allowed.", originalFileName);
+			throw new InvalidMediaTypeException(file.getContentType(), "Only application/xml and application/json are allowed.");
 		}
-		return tags;
 	}
 
 }
